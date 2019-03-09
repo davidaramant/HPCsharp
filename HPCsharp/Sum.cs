@@ -19,6 +19,17 @@ namespace HPCsharp
             return overallSum;
         }
 
+        public static long SumHpc2(this int[] arrayToSum)
+        {
+            long overallSum = 0;
+            unchecked
+            {
+                for (int i = 0; i < arrayToSum.Length; i++)
+                    overallSum += arrayToSum[i];
+            }
+            return overallSum;
+        }
+
         public static long SumHpc(this short[] arrayToSum)
         {
             long overallSum = 0;

@@ -64,23 +64,59 @@ namespace HPCsharp
             }
         }
 
-        public static void FillUsingArrayCopy2<T>(this T[] array, T value) where T : struct
+        public static void FillUsingArrayCopy2<T>(this T[] destinationArray, T value) where T : struct
         {
-            int blockSize = 32;
-            int index = 0;
-            int endIndex = Math.Min(blockSize, array.Length);
+            //int FindMostSignificantBit(int length)
+            //{
+            //    int mostSignificantBit = 0;
+            //    while ((length >>= 1) > 0)
+            //    {
+            //        mostSignificantBit++;
+            //    }
 
-            while (index < endIndex)
-                array[index++] = value;
+            //    return mostSignificantBit;
+            //}
 
+            //int bit = 5;
+            //int index = 0;
+            //int endIndex = Math.Min(1 << bit, array.Length);
 
+            //while (index < endIndex)
+            //    array[index++] = value;
 
-            endIndex = array.Length;
-            for (; index < endIndex; index += blockSize, blockSize *= 2)
+            //if (endIndex < array.Length)
+            //{
+            //    int msb = FindMostSignificantBit(array.Length);
+            //    int blockSize = 1 << bit;
+            //    for (; bit <= msb; bit++)
+            //    {
+            //        Array.Copy(array, 0, array, index, blockSize);
+            //        index += blockSize;
+            //        blockSize *= 2;
+            //    }
+
+            //    // Fill leftovers;
+            //    int leftover = array.Length - blockSize;
+            //    Array.Copy(array, 0, array, index, leftover);
+            //}
+
+            if (destinationArray == null)
             {
-                int actualBlockSize = Math.Min(blockSize, endIndex - index);
-                Array.Copy(array, 0, array, index, actualBlockSize);
+                throw new ArgumentNullException("destinationArray");
             }
+
+             // set the initial array value
+             destinationArray[0] = value;
+             
+            int arrayToFillHalfLength = destinationArray.Length / 2;
+            int copyLength;
+
+            for (copyLength = 1; copyLength < arrayToFillHalfLength; copyLength *= 2)
+            {
+                Array.Copy(destinationArray, 0, destinationArray, copyLength, copyLength);
+            }
+
+            Array.Copy(destinationArray, 0, destinationArray, copyLength, destinationArray.Length - copyLength);
         }
 
         // From StackOverflow fast fill question https://stackoverflow.com/questions/1897555/what-is-the-equivalent-of-memset-in-c
@@ -96,7 +132,7 @@ namespace HPCsharp
             else if (typeof(T) == typeof(ulong) || typeof(T) == typeof(long))
                 numBytesInItem = 8;
             else
-                throw new ArgumentException(string.Format("Type '{0}' is unsupported.", typeof(T).ToString()));
+                throw new ArgumentException($"Type '{typeof(T)}' is unsupported.");
 
             int block = 32, index = 0;
             int endIndex = Math.Min(block, array.Length);
